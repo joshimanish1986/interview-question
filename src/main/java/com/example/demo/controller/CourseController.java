@@ -27,6 +27,7 @@ public class CourseController {
 	CourseService courseService;
 
 	@PostMapping(path = "", consumes = "application/json", produces = "application/json")
+	
 	public ResponseEntity<CourseEntity> addCourse(@RequestBody CourseEntity course)
 
 	{
