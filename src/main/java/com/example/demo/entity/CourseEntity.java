@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -50,17 +51,25 @@ public class CourseEntity {
     
     
     @Column(name ="remaining")
-    private Integer remaining = 10;
+    private Integer remaining ;
     
     @OneToMany(mappedBy="course")
     @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @JsonIgnore
     private Set<Participant> partcipant;
 
 	@Override
 	public String toString() {
 		return "CourseEntity [id=" + id + ", title=" + title + ", startDate=" + startDate + ", endDate=" + endDate
 				+ ", capacity=" + capacity + ", remaining=" + remaining + ", partcipant=" + partcipant + "]";
+	}
+
+	public CourseEntity( String title, Date startDate, Date endDate, Integer capacity) {
+		
+		this.title = title;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.capacity = capacity;
 	}
 
 

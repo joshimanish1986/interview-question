@@ -1,11 +1,8 @@
 package com.example.demo.service;
-
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +12,9 @@ import com.example.demo.entity.CourseEntity;
 import com.example.demo.entity.Participant;
 import com.example.demo.exception.RecordNotFoundException;
 import com.example.demo.exception.NameAlreadyEnrolledException;
-import com.example.demo.exception.RegistrationClosedException;
+import com.example.demo.exception.ParticipantNotFoundException;
+import com.example.demo.exception.RegistrationNotAllowedException;
+import com.example.demo.exception.CancellationNotAllowedException;
 import com.example.demo.exception.CourseIsFullException;
 import com.example.demo.repository.CourseRepository;
 import com.example.demo.repository.ParticipantRepository;
@@ -54,8 +53,8 @@ public class ICourseService implements CourseService {
 	}
 
 	@Override
-	public CourseEntity createCourse(CourseEntity entity) throws Exception {
-
+	public CourseEntity addCourse(CourseEntity entity) throws Exception {
+		entity.setRemaining(entity.getCapacity());		
 		entity = courseRepo.save(entity);
 
 		return entity;
@@ -63,7 +62,7 @@ public class ICourseService implements CourseService {
 
 	@Override
 	public CourseEntity addParticipant(Long courseId, Participant participant) throws CourseIsFullException,
-			RegistrationClosedException, RecordNotFoundException, NameAlreadyEnrolledException, Exception {
+			RegistrationNotAllowedException, RecordNotFoundException, NameAlreadyEnrolledException, Exception {
 
 		courseRepo.findById(courseId).map(c -> {
 			if (!c.getPartcipant().isEmpty()) {
@@ -79,12 +78,9 @@ public class ICourseService implements CourseService {
 						courseRepo.save(c);
 					}
 
-					else {
-						System.out.println("Record cant be created");
-					}
 				} catch (NameAlreadyEnrolledException e) {
 					throw Lombok.sneakyThrow(e);
-				} catch (RegistrationClosedException e) {
+				} catch (RegistrationNotAllowedException e) {
 					throw Lombok.sneakyThrow(e);
 				} catch (CourseIsFullException e) {
 					throw Lombok.sneakyThrow(e);
@@ -96,20 +92,20 @@ public class ICourseService implements CourseService {
 				c.setRemaining(c.getRemaining() - 1);
 				courseRepo.save(c);
 			}
-
+			
 			return c;
 		}).orElseThrow(() -> new RecordNotFoundException("Course not found for the id  = " + courseId));
 
-		return null;
+		return courseRepo.findById(courseId).get();
 	}
 
 	@Override
-	public CourseEntity removeParticipant(Long courseId, Participant participant) throws Exception {
+	public CourseEntity removeParticipant(Long courseId, Participant participant)
+			throws CancellationNotAllowedException, ParticipantNotFoundException, Exception {
 		courseRepo.findById(courseId).map(c -> {
 			if (!c.getPartcipant().isEmpty()) {
 				try {
-					if (null != participantExists(c, participant)
-							&& isRegistrationCancellationAllowed(c, participant)) {
+					if (null != participantExists(c, participant) && isCancellationAllowed(c, participant)) {
 
 						participantRepo.deleteByName(participantExists(c, participant).get().getName());
 						c.setRemaining(c.getRemaining() + 1);
@@ -121,8 +117,10 @@ public class ICourseService implements CourseService {
 					}
 				}
 
-				catch (RecordNotFoundException e) {
-					System.out.println("Conditions not met " + e.getMessage());
+				catch (ParticipantNotFoundException e) {
+					throw Lombok.sneakyThrow(e);
+				} catch (CancellationNotAllowedException e) {
+					throw Lombok.sneakyThrow(e);
 				}
 
 			}
@@ -130,16 +128,17 @@ public class ICourseService implements CourseService {
 			return c;
 		}).orElseThrow(() -> new RecordNotFoundException("Course not found for the id  = " + courseId));
 
-		return null;
+		return courseRepo.findById(courseId).get();
 	}
 
-	public boolean isRegistrationAllowed(CourseEntity course, Participant p) throws RegistrationClosedException {
+	public boolean isRegistrationAllowed(CourseEntity course, Participant p) throws RegistrationNotAllowedException {
 
 		long diffInMillies = Math.abs(p.getRegistrationDate().getTime() - course.getStartDate().getTime());
 		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if (p.getRegistrationDate().after(course.getStartDate()) || diff <= 3) {
 
-			throw new RegistrationClosedException("Registration deadline over for this course Id " + course.getId());
+			throw new RegistrationNotAllowedException(
+					"Registration deadline over for this course Id " + course.getId());
 		}
 
 		return true;
@@ -169,13 +168,7 @@ public class ICourseService implements CourseService {
 	}
 
 	public Optional<Participant> participantExists(CourseEntity course, Participant participant)
-			throws RecordNotFoundException {
-
-		/*
-		 * if (!course.getPartcipant().stream().filter(p ->
-		 * p.getName().equalsIgnoreCase(participant.getName())) .findFirst().isEmpty())
-		 * {
-		 */
+			throws ParticipantNotFoundException {
 
 		Optional<Participant> user = course.getPartcipant().stream()
 				.filter(p -> p.getName().equalsIgnoreCase(participant.getName())).findFirst();
@@ -185,21 +178,21 @@ public class ICourseService implements CourseService {
 			return user;
 		}
 
-		/*
-		 * return true; }
-		 */
+		else {
+			throw new ParticipantNotFoundException(
+					"Participant doesnt exist for the given course ID " + course.getId());
+		}
 
-		return null;
 	}
 
-	public boolean isRegistrationCancellationAllowed(CourseEntity course, Participant p)
-			throws RecordNotFoundException {
+	public boolean isCancellationAllowed(CourseEntity course, Participant p) throws CancellationNotAllowedException {
 
 		long diffInMillies = Math.abs(p.getCancelDate().getTime() - course.getStartDate().getTime());
 		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if (p.getCancelDate().after(course.getStartDate()) || diff <= 3) {
 
-			throw new RecordNotFoundException("Cancellation deadline over for this course Id " + course.getId());
+			throw new CancellationNotAllowedException(
+					"Cancellation deadline over for this course Id " + course.getId());
 		}
 
 		return true;

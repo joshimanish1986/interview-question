@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import java.util.List;
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +15,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.entity.CourseEntity;
 import com.example.demo.entity.Participant;
+import com.example.demo.exception.CancellationNotAllowedException;
 import com.example.demo.exception.CourseIsFullException;
 import com.example.demo.exception.NameAlreadyEnrolledException;
+import com.example.demo.exception.ParticipantNotFoundException;
 import com.example.demo.exception.RecordNotFoundException;
-import com.example.demo.exception.RegistrationClosedException;
+import com.example.demo.exception.RegistrationNotAllowedException;
 import com.example.demo.service.ICourseService;
+
+
 
 @RestController
 @RequestMapping("/courses")
@@ -34,7 +39,7 @@ public class CourseController {
 
 	{
 		try {
-			courseService.createCourse(course);
+			courseService.addCourse(course);
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -78,7 +83,7 @@ public class CourseController {
 			course = courseService.addParticipant(courseId, participant);
 		} catch (NameAlreadyEnrolledException e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
-		} catch (RegistrationClosedException e) {
+		} catch (RegistrationNotAllowedException e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (CourseIsFullException e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -99,10 +104,15 @@ public class CourseController {
 		CourseEntity course = null;
 		try {
 			course = courseService.removeParticipant(courseId, participant);
+		} catch (CancellationNotAllowedException e) {
+			return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (ParticipantNotFoundException e) {
+			return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (RecordNotFoundException e) {
+			return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
 		return new ResponseEntity<CourseEntity>(course, HttpStatus.CREATED);
 	}
 

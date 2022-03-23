@@ -14,7 +14,7 @@ public interface CourseService {
 
 	List<CourseEntity> getCoursesByTitle(String title) throws RecordNotFoundException;
 
-	CourseEntity createCourse(CourseEntity entity) throws Exception;
+	CourseEntity addCourse(CourseEntity entity) throws Exception;
 
 	//void deleteCourseById(Long id) throws RecordNotFoundException;
 
