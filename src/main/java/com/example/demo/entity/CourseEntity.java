@@ -64,13 +64,7 @@ public class CourseEntity {
 				+ ", capacity=" + capacity + ", remaining=" + remaining + ", partcipant=" + partcipant + "]";
 	}
 
-	public CourseEntity( String title, Date startDate, Date endDate, Integer capacity) {
-		
-		this.title = title;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.capacity = capacity;
-	}
+	
 
 
     

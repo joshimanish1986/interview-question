@@ -12,6 +12,6 @@ import com.example.demo.entity.CourseEntity;
 public interface CourseRepository 
         extends JpaRepository<CourseEntity, Long> {
 	
-	List <CourseEntity> findByTitleContainingIgnoreCase(String title);
+	List <CourseEntity> findByTitleIgnoreCase(String title);
  
 }

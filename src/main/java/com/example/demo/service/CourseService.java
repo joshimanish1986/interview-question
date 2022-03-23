@@ -16,8 +16,6 @@ public interface CourseService {
 
 	CourseEntity addCourse(CourseEntity entity) throws Exception;
 
-	//void deleteCourseById(Long id) throws RecordNotFoundException;
-
 	CourseEntity addParticipant(Long courseId, Participant participant) throws Exception;
 
 	CourseEntity removeParticipant(Long courseId, Participant participant) throws Exception;

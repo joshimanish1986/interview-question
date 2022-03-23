@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -37,7 +38,7 @@ public class Participant {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "courseId", nullable = false)
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	
+	@JsonIgnore
 	private CourseEntity course;
 
 	@Column(name = "name")

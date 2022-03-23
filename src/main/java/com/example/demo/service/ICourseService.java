@@ -1,8 +1,8 @@
 package com.example.demo.service;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +30,11 @@ public class ICourseService implements CourseService {
 	@Autowired
 	ParticipantRepository participantRepo;
 
+	/**
+	 * Method returns courses for the id passed
+	 * @param id
+	 * @return CourseEntity
+	 */
 	@Override
 	public CourseEntity getCourseById(Long id) throws RecordNotFoundException {
 		Optional<CourseEntity> course = courseRepo.findById(id);
@@ -40,10 +45,15 @@ public class ICourseService implements CourseService {
 			throw new RecordNotFoundException("No course record exist for given id");
 		}
 	}
-
+	
+	/**
+	 * Method returns List of courses matching the title passed
+	 * @param title
+	 * @return CourseEntity
+	 */
 	@Override
 	public List<CourseEntity> getCoursesByTitle(String title) throws RecordNotFoundException {
-		List<CourseEntity> course = courseRepo.findByTitleContainingIgnoreCase(title);
+		List<CourseEntity> course = courseRepo.findByTitleIgnoreCase(title);
 
 		if (null != course && !course.isEmpty()) {
 			return course;
@@ -52,19 +62,30 @@ public class ICourseService implements CourseService {
 		}
 	}
 
+	/**
+	 * Creates new course and adds it to the Course Table
+	 * @param CourseEntity entity
+	 * @return CourseEntity
+	 */
 	@Override
 	public CourseEntity addCourse(CourseEntity entity) throws Exception {
-		entity.setRemaining(entity.getCapacity());		
+		entity.setRemaining(entity.getCapacity());
 		entity = courseRepo.save(entity);
 
 		return entity;
 	}
 
+	/**
+	 * Adds a new participant for the given course Id based on different conditions.
+	 * @param Participant participant
+	 * Long courseId
+	 * @return CourseEntity
+	 */
 	@Override
 	public CourseEntity addParticipant(Long courseId, Participant participant) throws CourseIsFullException,
 			RegistrationNotAllowedException, RecordNotFoundException, NameAlreadyEnrolledException, Exception {
 
-		courseRepo.findById(courseId).map(c -> {
+		CourseEntity cEntity = courseRepo.findById(courseId).map(c -> {
 			if (!c.getPartcipant().isEmpty()) {
 
 				System.out.println("Inside the participant is not empty");
@@ -92,17 +113,24 @@ public class ICourseService implements CourseService {
 				c.setRemaining(c.getRemaining() - 1);
 				courseRepo.save(c);
 			}
-			
+
 			return c;
 		}).orElseThrow(() -> new RecordNotFoundException("Course not found for the id  = " + courseId));
 
-		return courseRepo.findById(courseId).get();
+		return cEntity;
 	}
 
+	/**
+	 * Removes the participant for the given course Id based on different conditions.
+	 * @param Participant participant
+	 * Long courseId
+	 * @return CourseEntity
+	 */
 	@Override
 	public CourseEntity removeParticipant(Long courseId, Participant participant)
 			throws CancellationNotAllowedException, ParticipantNotFoundException, Exception {
-		courseRepo.findById(courseId).map(c -> {
+
+		CourseEntity cEntitiy = courseRepo.findById(courseId).map(c -> {
 			if (!c.getPartcipant().isEmpty()) {
 				try {
 					if (null != participantExists(c, participant) && isCancellationAllowed(c, participant)) {
@@ -128,9 +156,15 @@ public class ICourseService implements CourseService {
 			return c;
 		}).orElseThrow(() -> new RecordNotFoundException("Course not found for the id  = " + courseId));
 
-		return courseRepo.findById(courseId).get();
+		return cEntitiy;
 	}
 
+	/**
+	 * @param course
+	 * @param p
+	 * @return
+	 * @throws RegistrationNotAllowedException
+	 */
 	public boolean isRegistrationAllowed(CourseEntity course, Participant p) throws RegistrationNotAllowedException {
 
 		long diffInMillies = Math.abs(p.getRegistrationDate().getTime() - course.getStartDate().getTime());
@@ -145,6 +179,11 @@ public class ICourseService implements CourseService {
 
 	}
 
+	/**
+	 * @param course
+	 * @return
+	 * @throws CourseIsFullException
+	 */
 	public boolean isRegistrationAvailable(CourseEntity course) throws CourseIsFullException {
 
 		if (course.getRemaining() <= 0) {
@@ -155,6 +194,12 @@ public class ICourseService implements CourseService {
 		return true;
 	}
 
+	/**
+	 * @param course
+	 * @param participant
+	 * @return
+	 * @throws NameAlreadyEnrolledException
+	 */
 	public boolean participantAlreadyExists(CourseEntity course, Participant participant)
 			throws NameAlreadyEnrolledException {
 
@@ -167,6 +212,12 @@ public class ICourseService implements CourseService {
 		return false;
 	}
 
+	/**
+	 * @param course
+	 * @param participant
+	 * @return
+	 * @throws ParticipantNotFoundException
+	 */
 	public Optional<Participant> participantExists(CourseEntity course, Participant participant)
 			throws ParticipantNotFoundException {
 
@@ -185,6 +236,12 @@ public class ICourseService implements CourseService {
 
 	}
 
+	/**
+	 * @param course
+	 * @param p
+	 * @return
+	 * @throws CancellationNotAllowedException
+	 */
 	public boolean isCancellationAllowed(CourseEntity course, Participant p) throws CancellationNotAllowedException {
 
 		long diffInMillies = Math.abs(p.getCancelDate().getTime() - course.getStartDate().getTime());

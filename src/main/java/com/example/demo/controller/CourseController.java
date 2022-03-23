@@ -70,7 +70,7 @@ public class CourseController {
 			return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity(course, HttpStatus.OK);
+		return new ResponseEntity(course, HttpStatus.OK );
 	}
 
 	@PostMapping(path = "/{courseId}/add", consumes = "application/json", produces = "application/json")
