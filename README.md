@@ -2,10 +2,10 @@ Steps to deploy and make the API calls
 ================================================
 
 •	Clone the branch:- git clone https://github.com/joshimanish1986/interview-question.git
-•	In the command prompt - cd ~/interview-question
-•	Run mvn clean install
+•	In the command prompt - cd interview-question
+•	Run:- mvn clean install
 •	It will generate backbase-assignment-docker.jar in the target folder. 
-•	Run java -jar target/backbase-assignment-docker.jar to bring the application up.
+•	Run:- java -jar target/backbase-assignment-docker.jar to bring the application up.
 
 The application should start and following logs should be generated:-
 2022-03-25 15:26:22.794  INFO 6768 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
