@@ -1,7 +1,12 @@
 package com.example.demo.exception;
 
 public class RegistrationNotAllowedException extends Exception {
-    public RegistrationNotAllowedException(String msg) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public RegistrationNotAllowedException(String msg) {
         super(msg);
     }
 }

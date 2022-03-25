@@ -1,21 +1,16 @@
 package com.example.demo.controller;
 
 import java.util.List;
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.demo.entity.CourseEntity;
+import com.example.demo.entity.Course;
 import com.example.demo.entity.Participant;
 import com.example.demo.exception.CancellationNotAllowedException;
 import com.example.demo.exception.CourseIsFullException;
@@ -25,32 +20,36 @@ import com.example.demo.exception.RecordNotFoundException;
 import com.example.demo.exception.RegistrationNotAllowedException;
 import com.example.demo.service.ICourseService;
 
-
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/courses")
+@Slf4j
 public class CourseController {
 
 	@Autowired
 	ICourseService courseService;
 
-	@PostMapping(path = "", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<CourseEntity> addCourse(@RequestBody CourseEntity course)
+	@PostMapping(path = "/courses", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<Course> addCourse(@RequestBody Course course)
 
 	{
+		log.info(" Inside addCourse API");
 		try {
+
 			courseService.addCourse(course);
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return new ResponseEntity<CourseEntity>(course, HttpStatus.CREATED);
+		return new ResponseEntity<Course>(course, HttpStatus.CREATED);
 	}
 
-	@GetMapping(path = "", produces = "application/json")
-	public ResponseEntity<CourseEntity> getCourseByTitle(@RequestParam("q") String title) {
+	@GetMapping(path = "/courses", produces = "application/json")
+	public ResponseEntity<Course> getCourseByTitle(@RequestParam("q") String title) {
 
-		List<CourseEntity> course = null;
+		log.info(" Inside getCourseByTitle API for course title :: " + title);
+
+		List<Course> course = null;
 		try {
 			course = courseService.getCoursesByTitle(title);
 		} catch (RecordNotFoundException e) {
@@ -61,24 +60,28 @@ public class CourseController {
 
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<CourseEntity> getCourseById(@PathVariable("id") Long id) {
-		CourseEntity course;
+	@GetMapping("/courses/{id}")
+	public ResponseEntity<Course> getCourseById(@PathVariable("id") Long id) {
+
+		log.info(" Inside getCourseById API for course Id :: " + id);
+		Course course = null;
 		try {
+
 			course = courseService.getCourseById(id);
 		} catch (RecordNotFoundException e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity(course, HttpStatus.OK );
+		return new ResponseEntity(course, HttpStatus.OK);
 	}
 
-	@PostMapping(path = "/{courseId}/add", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<CourseEntity> addParticipant(@PathVariable(value = "courseId") Long courseId,
+	@PostMapping(path = "/courses/{courseId}/add", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<Course> addParticipant(@PathVariable(value = "courseId") Long courseId,
 			@RequestBody Participant participant)
 
 	{
-		CourseEntity course = null;
+		log.info(" Inside addParticipant API for course Id :: " + courseId);
+		Course course = null;
 		try {
 			course = courseService.addParticipant(courseId, participant);
 		} catch (NameAlreadyEnrolledException e) {
@@ -93,15 +96,16 @@ public class CourseController {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return new ResponseEntity<CourseEntity>(course, HttpStatus.OK);
+		return new ResponseEntity<Course>(course, HttpStatus.OK);
 	}
 
-	@DeleteMapping(path = "/{courseId}/remove", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<CourseEntity> cancelEnrollment(@PathVariable(value = "courseId") Long courseId,
+	@PostMapping(path = "/courses/{courseId}/remove", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<Course> removeParticipant(@PathVariable(value = "courseId") Long courseId,
 			@RequestBody Participant participant)
 
 	{
-		CourseEntity course = null;
+		log.info(" Inside removeParticipant API for course Id :: " + courseId);
+		Course course = null;
 		try {
 			course = courseService.removeParticipant(courseId, participant);
 		} catch (CancellationNotAllowedException e) {
@@ -113,7 +117,7 @@ public class CourseController {
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<CourseEntity>(course, HttpStatus.CREATED);
+		return new ResponseEntity<Course>(course, HttpStatus.CREATED);
 	}
 
 }

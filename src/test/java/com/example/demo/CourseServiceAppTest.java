@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.demo.entity.CourseEntity;
+import com.example.demo.entity.Course;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -38,7 +38,7 @@ public class CourseServiceAppTest {
 	@org.junit.jupiter.api.Test
 	public void testCourseService() throws Exception {
 
-		CourseEntity reqObj = new CourseEntity();
+		Course reqObj = new Course();
 		reqObj.setTitle("CT1");
 		reqObj.setStartDate(new Date());
 		reqObj.setEndDate(new Date());

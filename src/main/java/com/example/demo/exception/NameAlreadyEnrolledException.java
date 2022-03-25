@@ -1,7 +1,12 @@
 package com.example.demo.exception;
 
 public class NameAlreadyEnrolledException extends Exception {
-    public NameAlreadyEnrolledException(String msg) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public NameAlreadyEnrolledException(String msg) {
         super(msg);
     }
 }

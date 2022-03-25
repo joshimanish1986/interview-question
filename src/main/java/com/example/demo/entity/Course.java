@@ -7,8 +7,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -27,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name="TBL_COURSES")
 @Getter @Setter
-public class CourseEntity {
+public class Course {
  
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -53,10 +55,11 @@ public class CourseEntity {
     @Column(name ="remaining")
     private Integer remaining ;
     
-    @OneToMany(mappedBy="course")
+    //@OneToMany(mappedBy="course")
+    @OneToMany(mappedBy = "course", fetch=FetchType.EAGER)
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
-    private Set<Participant> partcipant;
+    //@JsonIgnore
+    private Set<Participant> partcipant = new HashSet<Participant>();
 
 	@Override
 	public String toString() {
